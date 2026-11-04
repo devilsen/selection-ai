@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>划词 AI 助手 · 设置</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --border: #e6e8ef;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --danger: #dc2626;
+      --ok: #059669;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+    header { margin-bottom: 22px; }
+    .logo {
+      font-size: 24px; font-weight: 700; letter-spacing: .5px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo::before {
+      content: ""; width: 12px; height: 30px; border-radius: 6px;
+      background: linear-gradient(180deg, #6366f1, #8b5cf6); display: inline-block;
+    }
+    .sub { color: var(--muted); margin: 8px 0 0; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 22px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    }
+    .card h2 { margin: 0 0 16px; font-size: 15px; font-weight: 700; color: #111827; }
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px;
+      font-size: 14px; font-family: inherit; color: var(--text); background: #fff;
+      outline: none; transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    }
+    textarea { resize: vertical; min-height: 84px; line-height: 1.55; }
+    .keywrap { display: flex; gap: 8px; }
+    .keywrap input { flex: 1; }
+    button {
+      font-family: inherit; font-size: 14px; cursor: pointer; border-radius: 9px;
+      border: 1px solid var(--border); background: #fff; color: #374151;
+      padding: 8px 16px; transition: all .12s ease; white-space: nowrap;
+    }
+    button:hover { background: #f3f4f6; }
+    button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    button.primary:hover { background: var(--accent-hover); }
+    button.ghost { background: transparent; }
+    code {
+      background: #eef0f6; color: #4338ca; padding: 1px 6px; border-radius: 5px;
+      font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px;
+    }
+    .footer {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;
+    }
+    .test-status { font-size: 13px; color: var(--muted); min-height: 20px; }
+    details.providers { margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 10px; }
+    summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; }
+    details pre {
+      background: #f8f9fc; border: 1px solid var(--border); border-radius: 9px;
+      padding: 12px 14px; overflow-x: auto; font-size: 12px; line-height: 1.7;
+      font-family: "SF Mono", Menlo, Consolas, monospace; color: #374151;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">划词 AI 助手</div>
+      <p class="sub">选中网页文字，一键「解释 / 翻译」 · 支持任意 OpenAI 兼容大模型，Prompt 可完全自定义</p>
+    </header>
+
+    <section class="card">
+      <h2>1 · 大模型接口</h2>
+      <div class="field">
+        <label for="endpoint">接口地址 <span class="hint">（支持中转站 base URL 或 chat/completions 完整地址）</span></label>
+        <input id="endpoint" type="text" spellcheck="false" placeholder="https://api.deepseek.com" />
+        <p class="hint">只填中转站域名也可（如 <code>https://中转站域名.com</code>），会自动补全为 <code>/v1/chat/completions</code>。</p>
+      </div>
+      <div class="field">
+        <label for="apiKey">API Key</label>
+        <div class="keywrap">
+          <input id="apiKey" type="password" spellcheck="false" placeholder="sk-..." autocomplete="off" />
+          <button type="button" id="toggleKey" class="ghost">显示</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="model">模型名称</label>
+        <input id="model" type="text" spellcheck="false" placeholder="deepseek-chat" />
+      </div>
+      <div class="field">
+        <button type="button" id="testBtn" class="ghost">测试连接</button>
+        <span id="testStatus" class="test-status"></span>
+      </div>
+      <details class="providers">
+        <summary>常见服务商地址示例（点击展开）</summary>
+        <pre>中转站:    https://你的中转站域名                                        （只填 base URL，自动补 /v1/chat/completions）
+DeepSeek:  https://api.deepseek.com/chat/completions                            模型 deepseek-chat
+OpenAI:    https://api.openai.com/v1/chat/completions                             模型 gpt-4o-mini
+Kimi:      https://api.moonshot.cn/v1/chat/completions                            模型 moonshot-v1-8k
+通义千问:  https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions     模型 qwen-plus
+智谱 GLM:  https://open.bigmodel.cn/api/paas/v4/chat/completions                  模型 glm-4-flash
+硅基流动:  https://api.siliconflow.cn/v1/chat/completions                         模型 deepseek-ai/DeepSeek-V3</pre>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>2 · 按钮一：问号（解释）</h2>
+      <div class="field">
+        <label for="questionLabel">按钮文字</label>
+        <input id="questionLabel" type="text" maxlength="6" placeholder="?" />
+      </div>
+      <div class="field">
+        <label for="questionPrompt">Prompt</label>
+        <textarea id="questionPrompt" rows="5" spellcheck="false"></textarea>
+        <p class="hint">占位符：<code>{{selection}}</code> 选中的文字 · <code>{{context}}</code> 选中处的上下文段落</p>
+      </div>
+      <div class="field">
+        <label for="contextQuestionPrompt">结合上下文的 Prompt（点「在上下文中查看」时使用）</label>
+        <textarea id="contextQuestionPrompt" rows="5" spellcheck="false"></textarea>
+        <p class="hint">选中内容较短（如单个词）时，用它结合上下文重新解释，结果更准确。占位符同上。</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3 · 按钮二：翻译</h2>
+      <div class="field">
+        <label for="translateLabel">按钮文字</label>
+        <input id="translateLabel" type="text" maxlength="6" placeholder="译" />
+      </div>
+      <div class="field">
+        <label for="translatePrompt">Prompt</label>
+        <textarea id="translatePrompt" rows="5" spellcheck="false"></textarea>
+        <p class="hint">占位符：<code>{{selection}}</code> 选中的文字 · <code>{{context}}</code> 选中处的上下文段落</p>
+      </div>
+      <div class="field">
+        <label for="contextTranslatePrompt">结合上下文的 Prompt（点「在上下文中查看」时使用）</label>
+        <textarea id="contextTranslatePrompt" rows="5" spellcheck="false"></textarea>
+        <p class="hint">选中内容较短时，用它结合上下文重新翻译，结果更准确。占位符同上。</p>
+      </div>
+    </section>
+
+    <div class="footer">
+      <button type="button" id="saveBtn" class="primary">保存设置</button>
+      <button type="button" id="resetBtn" class="ghost">恢复默认</button>
+      <span id="saveStatus" class="test-status"></span>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
