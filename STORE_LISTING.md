@@ -23,22 +23,31 @@
 
 ## 2. 商店资料文案（直接复制）
 
-| 字段 | 内容 |
-| --- | --- |
-| **名称** | `Selection AI - 划词解释与翻译助手` |
-| **分类** | 生产力工具（Productivity） |
-| **语言** | 简体中文（可再添加英语） |
-| **价格** | 免费 |
+> ⚠️ **多语言一致性（审核重点）**：商店的默认语言是简体中文；如果你同时提供英语语言区域的商品说明，英文内容必须是中文内容的**逐段对应翻译**——功能点、隐私声明完全一致，不能增删改换。内容不一致会被判定为「误导性元数据」并进入深入审核。下方给出的是逐段对应的中英双语文案，照抄即可。
+
+| 字段 | 中文（默认） | English（语言区域） |
+| --- | --- | --- |
+| **名称** | `Selection AI - 划词解释与翻译助手` | `Selection AI - Explain & Translate Selected Text` |
+| **分类** | 生产力工具（Productivity） | Productivity |
+| **价格** | 免费 | Free |
 
 **摘要（Summary，≤132 字符）**
+
+中文（默认）：
 
 ```
 选中网页文字，一键用 AI 解释或翻译。Prompt 可完全自定义，支持流式输出、Markdown 与任意 OpenAI 兼容接口。
 ```
 
-（英语备选：`Select any text to instantly explain or translate it with AI. Customizable prompts, streaming, Markdown, OpenAI-compatible APIs.`）
+英语：
+
+```
+Select any webpage text and explain or translate it with AI. Customizable prompts, streaming, Markdown, OpenAI-compatible APIs.
+```
 
 **详细说明（Description）**
+
+中文（默认）：
 
 ```
 选中网页上的任意文字，一键用 AI 解释或翻译。
@@ -59,6 +68,29 @@
 - API Key 仅保存在浏览器本地（chrome.storage.local），不会上传到任何服务器
 - 选中的文字与所在段落只会发送到你自行配置的大模型接口，用于生成解释/翻译
 - 本扩展没有自建服务器，不会收集或存储你的任何内容
+```
+
+英语（与上面逐段对应）：
+
+```
+Select any text on a webpage and explain or translate it with AI in one click.
+
+Core features
+- Select and go: select text with your mouse and two buttons appear — Explain (?) and Translate (译)
+- Explain: the selected term or concept is explained in plain language using the Feynman technique (length customizable)
+- Translate: the result stays faithful to the original, takes context into account, and is accurate, expressive, and elegant
+- Fully customizable: the prompts of both buttons can be freely edited to do whatever you want
+- View in context: for short selections like a single word, click "View in context" at the end of the result to re-process it together with the surrounding paragraph, giving a more accurate explanation or translation
+- Streaming output + Markdown rendering
+
+Supported models
+- Works with any OpenAI-compatible API (DeepSeek / OpenAI / Kimi / Qwen / Zhipu / relay stations, etc.)
+- Just fill in the endpoint, API key, and model name, then click "Test connection"
+
+Privacy
+- Your API key is stored only locally in the browser (chrome.storage.local) and is never uploaded to any server
+- Selected text and its surrounding paragraph are sent only to the model API you configure yourself, to generate explanations or translations
+- This extension hosts no servers of its own and does not collect or store any of your content
 ```
 
 ---
@@ -107,14 +139,16 @@
 2. 点「**新增项目（New item）**」。
 3. 上传 `dist/selection-ai-1.1.0.zip`。
 4. 填写「**商品详情**」：名称、摘要、说明（用上面第 2 节文案）。
-5. 上传「**图片素材**」：图标、截图、推广图（用第 4 节文件）。
-6. 填写「**隐私权**」：单一用途、权限说明、数据使用（用第 3 节文案）。
-7. 选择「**发布**」可见范围（建议先「**不公开**」或「**测试人员**」试跑，确认无误再「公开」）。
-8. 提交审核，等待 Google 审核（一般数天，权限较宽的扩展可能更久）。
+5. 搬运**英语语言区域**的商品详情时，用第 2 节英文栏的逐段对应翻译（不要机翻重写、不要增删功能点）。
+6. 上传「**图片素材**」：图标、截图、推广图（用第 4 节文件）。
+7. 填写「**隐私权**」：单一用途、权限说明、数据使用（用第 3 节文案）。
+8. 选择「**发布**」可见范围（建议先「**不公开**」或「**测试人员**」试跑，确认无误再「公开」）。
+9. 提交审核，等待 Google 审核（一般数天，权限较宽的扩展可能更久）。
 
 ---
 
 ## 6. 风险提示
 
 - `host_permissions: ["<all_urls>"]` 是审核重点，务必把第 3 节的「权限说明」写清楚；若被打回，常见原因是权限用途描述不充分。
+- **多语言元数据一致性**：若有英语语言区域，必须与默认（中文）说明逐段对应，否则触发「元数据不匹配」深入审核（本次已遇到，按第 2 节修正）。
 - 首次上架建议先选「不公开」发布，验证安装/更新链路正常后再转公开。
