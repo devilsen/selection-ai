@@ -1,34 +1,57 @@
 // 划词 AI 助手 - 内容脚本
-// 选中文字后弹出「问号 / 翻译」按钮；点击后流式接收大模型输出并渲染 Markdown。
-// 使用 Shadow DOM 隔离样式。
+// 选中文字后弹出「问号 / 翻译」按钮（显示在文字下方）；点击后流式接收大模型输出并渲染 Markdown。
+// 使用 Shadow DOM 隔离样式。文案通过 chrome.i18n 多语言化。
 
 (() => {
   'use strict';
   if (window.__selectionAILoaded__) return;
   window.__selectionAILoaded__ = true;
 
+  function msg(key) {
+    try {
+      const v = chrome.i18n.getMessage(key);
+      if (v) return v;
+    } catch (e) {
+      /* ignore */
+    }
+    return '';
+  }
+
   const DEFAULT_CONFIG = {
     endpoint: 'https://api.deepseek.com/chat/completions',
     apiKey: '',
     model: 'deepseek-chat',
-    questionLabel: '?',
-    questionPrompt:
-      '用通俗易懂的概念，解释这个名词，可以结合费曼学习法说明，字数不要超过 200 个。\n\n名词：{{selection}}\n\n上下文：\n{{context}}',
-    translateLabel: '译',
-    translatePrompt:
-      '将这段文字翻译成中文，在忠实原文的情况下，读取上下文进行翻译，结果要信达雅。\n\n原文：{{selection}}\n\n上下文：\n{{context}}',
-    contextQuestionPrompt:
-      '结合下方「上下文」段落，准确解释其中选中的词语/概念「{{selection}}」在具体语境中的含义，说明它在此处指的是什么、为什么这样用，避免脱离语境的泛泛解释。\n\n选中的词：{{selection}}\n\n上下文：\n{{context}}',
-    contextTranslatePrompt:
-      '结合下方「上下文」段落，准确翻译选中的内容「{{selection}}」，根据上下文确定词语在具体语境中的准确含义，结果要信达雅。\n\n选中的内容：{{selection}}\n\n上下文：\n{{context}}'
+    questionLabel: msg('defaultQuestionLabel'),
+    questionPrompt: msg('defaultQuestionPrompt'),
+    translateLabel: msg('defaultTranslateLabel'),
+    translatePrompt: msg('defaultTranslatePrompt'),
+    contextQuestionPrompt: msg('defaultContextQuestionPrompt'),
+    contextTranslatePrompt: msg('defaultContextTranslatePrompt')
   };
 
   const CSS = `
     .toolbar {
       position: fixed; display: none; align-items: center; gap: 6px; padding: 4px;
-      background: #1f2937; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.30);
+      background: rgba(255, 255, 255, 0.78);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 1px 1px rgba(0, 0, 0, 0.04),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 12px 32px rgba(0, 0, 0, 0.10);
       pointer-events: auto; z-index: 2147483647;
+      animation: sa-pop .18s cubic-bezier(.2, .9, .35, 1.15);
     }
+    .toolbar .btn {
+      min-width: 32px; height: 29px; padding: 0 9px; border-radius: 8px; font-size: 13px;
+      color: #1d1d1f; background: transparent; border: none;
+      transition: background .16s ease, transform .08s ease, color .16s ease;
+    }
+    .toolbar .btn:hover { background: rgba(0, 0, 0, 0.055); }
+    .toolbar .btn:active { background: rgba(0, 0, 0, 0.12); transform: scale(0.96); }
     .btn {
       all: unset; cursor: pointer; min-width: 36px; height: 32px; padding: 0 10px;
       border-radius: 8px; color: #fff; font-size: 15px; font-weight: 600; line-height: 1;
@@ -43,10 +66,15 @@
     .result {
       position: fixed; display: none; width: min(460px, calc(100vw - 16px));
       pointer-events: auto; z-index: 2147483647; background: #fff; color: #1f2937;
-      border-radius: 12px; box-shadow: 0 10px 34px rgba(0,0,0,.24); overflow: hidden;
+      border-radius: 14px; overflow: hidden;
+      box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.04),
+        0 8px 20px rgba(0, 0, 0, 0.08),
+        0 20px 48px rgba(0, 0, 0, 0.12);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
         "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       font-size: 14px; line-height: 1.65; box-sizing: border-box;
+      animation: sa-pop-result .2s cubic-bezier(.2, .9, .35, 1.08);
     }
     .result-head {
       display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -73,6 +101,14 @@
       margin-right: 9px; flex: 0 0 auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes sa-pop {
+      from { opacity: 0; transform: translateY(6px) scale(.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes sa-pop-result {
+      from { opacity: 0; transform: translateY(4px) scale(.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
     /* ---- Markdown ---- */
     .md { line-height: 1.7; }
@@ -114,6 +150,57 @@
     .ctx-loading { display: flex; align-items: center; color: #6b7280; }
     .ctx-streaming { white-space: pre-wrap; }
     .ctx-error { color: #b91c1c; white-space: pre-wrap; }
+
+    /* ---- 夜间模式（跟随系统） ---- */
+    @media (prefers-color-scheme: dark) {
+      .toolbar {
+        background: rgba(30, 30, 32, 0.66);
+        border-color: rgba(255, 255, 255, 0.10);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          0 1px 1px rgba(0, 0, 0, 0.35),
+          0 4px 12px rgba(0, 0, 0, 0.35),
+          0 12px 32px rgba(0, 0, 0, 0.40);
+      }
+      .toolbar .btn {
+        color: #f5f5f7; background: transparent; border: none;
+      }
+      .toolbar .btn:hover { background: rgba(255, 255, 255, 0.10); }
+      .toolbar .btn:active { background: rgba(255, 255, 255, 0.18); }
+
+      .result {
+        background: #1f2937; color: #e5e7eb;
+        box-shadow:
+          0 1px 1px rgba(0, 0, 0, 0.3),
+          0 8px 20px rgba(0, 0, 0, 0.35),
+          0 20px 48px rgba(0, 0, 0, 0.35);
+      }
+      .result-head { background: #111827; border-bottom-color: #374151; }
+      .result-title { color: #f9fafb; }
+      .result-head .btn {
+        color: #e5e7eb; background: #1f2937; border-color: #4b5563;
+      }
+      .result-head .btn:hover { background: #374151; }
+      .result-body.loading { color: #9ca3af; }
+      .result-body.error { color: #f87171; }
+      .spinner { border-color: #4b5563; border-top-color: #818cf8; }
+
+      .md code { background: #374151; color: #c7d2fe; }
+      .md pre { background: #111827; border-color: #374151; }
+      .md pre code { color: #e5e7eb; }
+      .md blockquote { border-left-color: #4b5563; color: #9ca3af; }
+      .md a { color: #818cf8; }
+      .md hr { border-top-color: #374151; }
+      .md del { color: #6b7280; }
+
+      .ctx-foot { border-top-color: #374151; }
+      .ctx-toggle { color: #818cf8; }
+      .ctx-box {
+        background: #111827; border-color: #374151; color: #9ca3af;
+      }
+      .ctx-loading { color: #9ca3af; }
+      .ctx-error { color: #f87171; }
+    }
   `;
 
   // ---- 挂载 Shadow DOM 宿主 ----
@@ -142,7 +229,7 @@
   let cachedConfig = null;
   let currentText = '';
   let currentContext = '';
-  let anchor = { x: 0, y: 0 };
+  let anchor = { x: 0, top: 0, bottom: 0 };
   let loading = false;
   let resultDismissed = false;
   let resultBodyEl = null;
@@ -332,8 +419,8 @@
   // ---- 工具栏 ----
   function buildToolbar(cfg) {
     toolbar.textContent = '';
-    addButton(toolbar, cfg.questionLabel || '?', '解释（问号）', 'question');
-    addButton(toolbar, cfg.translateLabel || '译', '翻译', 'translate');
+    addButton(toolbar, cfg.questionLabel || msg('defaultQuestionLabel'), msg('titleQuestion'), 'question');
+    addButton(toolbar, cfg.translateLabel || msg('defaultTranslateLabel'), msg('titleTranslate'), 'translate');
   }
 
   function addButton(parent, label, title, key) {
@@ -359,18 +446,19 @@
     parent.appendChild(b);
   }
 
-  async function showToolbar(x, y) {
+  async function showToolbar() {
     const cfg = await getConfig();
     buildToolbar(cfg);
-    anchor = { x, y };
     toolbar.style.display = 'flex';
     toolbar.style.visibility = 'hidden';
     const w = toolbar.offsetWidth;
     const h = toolbar.offsetHeight;
-    let left = x - w / 2;
-    let top = y - h - 8;
-    if (top < 6) top = y + 8;
-    left = clamp(left, 6, window.innerWidth - w - 6);
+    let left = clamp(anchor.x - w / 2, 6, window.innerWidth - w - 6);
+    // 优先显示在选中文字的下方，不遮挡文字
+    let top = anchor.bottom + 4;
+    if (top + h > window.innerHeight - 6) {
+      top = anchor.top - h - 4; // 下方放不下时回退到上方
+    }
     top = clamp(top, 6, window.innerHeight - h - 6);
     toolbar.style.left = left + 'px';
     toolbar.style.top = top + 'px';
@@ -407,8 +495,8 @@
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn btn-primary';
-    btn.title = '配置';
-    btn.setAttribute('aria-label', '配置');
+    btn.title = msg('gearTitle');
+    btn.setAttribute('aria-label', msg('gearTitle'));
     btn.innerHTML =
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<circle cx="12" cy="12" r="3"></circle>' +
@@ -422,12 +510,12 @@
     const copy = document.createElement('button');
     copy.type = 'button';
     copy.className = 'btn';
-    copy.textContent = '复制';
+    copy.textContent = msg('copyBtn');
     copy.addEventListener('click', () => {
       copyText(resultRawText).then((ok) => {
-        copy.textContent = ok ? '已复制' : '复制失败';
+        copy.textContent = ok ? msg('copied') : msg('copyFailed');
         setTimeout(() => {
-          if (copy.isConnected) copy.textContent = '复制';
+          if (copy.isConnected) copy.textContent = msg('copyBtn');
         }, 1200);
       });
     });
@@ -440,7 +528,7 @@
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.className = 'ctx-toggle';
-    toggle.textContent = '在上下文中查看';
+    toggle.textContent = msg('viewInContext');
     const box = document.createElement('div');
     box.className = 'ctx-box';
     box.style.display = 'none';
@@ -454,7 +542,7 @@
       const spin = document.createElement('span');
       spin.className = 'spinner';
       const label = document.createElement('span');
-      label.textContent = '正在结合上下文处理…';
+      label.textContent = msg('ctxProcessing');
       el.appendChild(spin);
       el.appendChild(label);
       box.appendChild(el);
@@ -485,11 +573,11 @@
             md.innerHTML = renderMarkdown(acc);
             box.appendChild(md);
           },
-          onError(msg) {
+          onError(msgText) {
             box.innerHTML = '';
             const err = document.createElement('div');
             err.className = 'ctx-error';
-            err.textContent = msg;
+            err.textContent = msgText;
             box.appendChild(err);
           }
         }
@@ -499,7 +587,7 @@
     toggle.addEventListener('click', () => {
       const open = box.style.display === 'none';
       box.style.display = open ? 'block' : 'none';
-      toggle.textContent = open ? '收起上下文' : '在上下文中查看';
+      toggle.textContent = open ? msg('hideContext') : msg('viewInContext');
       if (open && !ctxDone) {
         runContext();
       }
@@ -531,7 +619,7 @@
       const spin = document.createElement('span');
       spin.className = 'spinner';
       const label = document.createElement('span');
-      label.textContent = '正在生成，请稍候…';
+      label.textContent = msg('generating');
       body.appendChild(spin);
       body.appendChild(label);
     } else if (mode === 'stream') {
@@ -560,7 +648,7 @@
     close.type = 'button';
     close.className = 'btn';
     close.textContent = '×';
-    close.title = '关闭';
+    close.title = msg('closeTitle');
     close.addEventListener('click', () => dismissResult());
     actions.appendChild(close);
 
@@ -585,9 +673,12 @@
     resultBox.style.visibility = 'hidden';
     const w = resultBox.offsetWidth;
     const h = resultBox.offsetHeight;
-    let left = anchor.x - w / 2;
-    let top = anchor.y + 10;
-    left = clamp(left, 6, window.innerWidth - w - 6);
+    let left = clamp(anchor.x - w / 2, 6, window.innerWidth - w - 6);
+    // 结果面板同样显示在选中文字下方，不遮挡文字
+    let top = anchor.bottom + 4;
+    if (top + h > window.innerHeight - 6) {
+      top = anchor.top - h - 4; // 下方放不下时回退到上方
+    }
     top = clamp(top, 6, window.innerHeight - h - 6);
     resultBox.style.left = left + 'px';
     resultBox.style.top = top + 'px';
@@ -628,9 +719,14 @@
       if (sel && sel.rangeCount > 0) {
         const rects = sel.getRangeAt(0).getClientRects();
         if (rects && rects.length) {
-          const r = rects[0];
-          if (r && (r.width || r.height)) {
-            return { x: r.left + r.width / 2, y: r.top };
+          const first = rects[0];
+          const last = rects[rects.length - 1];
+          if (first && last && (first.width || first.height)) {
+            return {
+              x: first.left + first.width / 2,
+              top: first.top,
+              bottom: last.bottom
+            };
           }
         }
       }
@@ -683,9 +779,8 @@
         currentText = text;
         currentContext = getContext(sel);
         const rect = selectionAnchor(sel);
-        const x = rect ? rect.x : e.clientX;
-        const y = rect ? rect.y : e.clientY;
-        showToolbar(x, y);
+        anchor = rect || { x: e.clientX, top: e.clientY, bottom: e.clientY };
+        showToolbar();
       } else if (!loading) {
         hideAll();
       }
@@ -728,33 +823,33 @@
     try {
       port = chrome.runtime.connect({ name: 'llm-stream' });
     } catch (e) {
-      handlers.onError('连接后台失败：' + ((e && e.message) || e));
+      handlers.onError(msg('errConnect') + ((e && e.message) || e));
       return state;
     }
 
-    port.onMessage.addListener((msg) => {
-      if (!msg) return;
-      if (msg.type === 'ready') {
+    port.onMessage.addListener((msgPort) => {
+      if (!msgPort) return;
+      if (msgPort.type === 'ready') {
         try {
           port.postMessage(request);
         } catch (e) {
           finish();
-          handlers.onError('发送请求失败：' + ((e && e.message) || e));
+          handlers.onError(msg('errSend') + ((e && e.message) || e));
         }
-      } else if (msg.type === 'chunk') {
+      } else if (msgPort.type === 'chunk') {
         gotAny = true;
-        acc += msg.content;
-        handlers.onChunk(msg.content, acc);
-      } else if (msg.type === 'done') {
+        acc += msgPort.content;
+        handlers.onChunk(msgPort.content, acc);
+      } else if (msgPort.type === 'done') {
         if (finished) return;
         finish();
         handlers.onDone(acc);
-      } else if (msg.type === 'error') {
+      } else if (msgPort.type === 'error') {
         if (finished) return;
         finish();
         const needConfig =
-          msg.code === 'NO_API_KEY' || msg.code === 'NO_ENDPOINT' || msg.code === 'NO_MODEL';
-        handlers.onError(msg.error, needConfig);
+          msgPort.code === 'NO_API_KEY' || msgPort.code === 'NO_ENDPOINT' || msgPort.code === 'NO_MODEL';
+        handlers.onError(msgPort.error, needConfig);
       }
     });
 
@@ -762,7 +857,7 @@
       if (finished) return;
       finish();
       if (gotAny) handlers.onDone(acc);
-      else handlers.onError('请求中断，请重试。');
+      else handlers.onError(msg('errInterrupted'));
     });
 
     return state;
@@ -775,7 +870,8 @@
     const isQuestion = key === 'question';
     const prompt = isQuestion ? cfg.questionPrompt : cfg.translatePrompt;
     const label =
-      (isQuestion ? cfg.questionLabel : cfg.translateLabel) || (isQuestion ? '?' : '译');
+      (isQuestion ? cfg.questionLabel : cfg.translateLabel) ||
+      (isQuestion ? msg('defaultQuestionLabel') : msg('defaultTranslateLabel'));
 
     currentKey = key;
     hideToolbar();
@@ -793,9 +889,9 @@
           loading = false;
           if (!resultDismissed) showResult(label, 'final', acc);
         },
-        onError(msg, needConfig) {
+        onError(msgText, needConfig) {
           loading = false;
-          if (!resultDismissed) showResult(label, 'error', { msg, needConfig });
+          if (!resultDismissed) showResult(label, 'error', { msg: msgText, needConfig });
         }
       }
     );

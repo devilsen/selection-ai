@@ -4,14 +4,18 @@
 const DEFAULT_CONFIG = {
   endpoint: 'https://api.deepseek.com/chat/completions',
   apiKey: '',
-  model: 'deepseek-chat',
-  questionLabel: '?',
-  questionPrompt:
-    '用通俗易懂的概念，解释这个名词，可以结合费曼学习法说明，字数不要超过 200 个。\n\n名词：{{selection}}\n\n上下文：\n{{context}}',
-  translateLabel: '译',
-  translatePrompt:
-    '将这段文字翻译成中文，在忠实原文的情况下，读取上下文进行翻译，结果要信达雅。\n\n原文：{{selection}}\n\n上下文：\n{{context}}'
+  model: 'deepseek-chat'
 };
+
+function msg(key, subs) {
+  try {
+    const v = chrome.i18n.getMessage(key, subs);
+    if (v) return v;
+  } catch (e) {
+    /* ignore */
+  }
+  return '';
+}
 
 async function getConfig() {
   const data = await chrome.storage.local.get(DEFAULT_CONFIG);
@@ -70,27 +74,15 @@ async function handleStreamCall(port, { text, context, prompt }) {
   const config = await getConfig();
 
   if (!config.apiKey || !config.apiKey.trim()) {
-    port.postMessage({
-      type: 'error',
-      code: 'NO_API_KEY',
-      error: '尚未配置 API Key，点击右上角的齿轮图标即可跳转到设置页。'
-    });
+    port.postMessage({ type: 'error', code: 'NO_API_KEY', error: msg('errNoApiKey') });
     return;
   }
   if (!config.endpoint) {
-    port.postMessage({
-      type: 'error',
-      code: 'NO_ENDPOINT',
-      error: '尚未配置接口地址，点击右上角的齿轮图标即可跳转到设置页。'
-    });
+    port.postMessage({ type: 'error', code: 'NO_ENDPOINT', error: msg('errNoEndpoint') });
     return;
   }
   if (!config.model) {
-    port.postMessage({
-      type: 'error',
-      code: 'NO_MODEL',
-      error: '尚未配置模型名称，点击右上角的齿轮图标即可跳转到设置页。'
-    });
+    port.postMessage({ type: 'error', code: 'NO_MODEL', error: msg('errNoModel') });
     return;
   }
 
@@ -124,7 +116,10 @@ async function handleStreamCall(port, { text, context, prompt }) {
   } catch (e) {
     port.postMessage({
       type: 'error',
-      error: '网络请求失败：' + (e && e.message ? e.message : String(e)) + '（请检查接口地址是否可达）'
+      error:
+        msg('errNet') +
+        (e && e.message ? e.message : String(e)) +
+        msg('errNetHint')
     });
     return;
   }
@@ -136,18 +131,18 @@ async function handleStreamCall(port, { text, context, prompt }) {
     } catch (e) {
       /* ignore */
     }
-    let msg = '';
+    let errText = '';
     try {
       const d = raw ? JSON.parse(raw) : {};
       if (d && d.error) {
-        msg = typeof d.error === 'string' ? d.error : d.error.message || JSON.stringify(d.error);
+        errText = typeof d.error === 'string' ? d.error : d.error.message || JSON.stringify(d.error);
       }
     } catch (e) {
       /* ignore */
     }
     port.postMessage({
       type: 'error',
-      error: '请求失败（HTTP ' + res.status + '）' + (msg ? '：' + String(msg) : '')
+      error: msg('errHttp', [String(res.status)]) + (errText ? String(errText) : '')
     });
     return;
   }
@@ -214,7 +209,7 @@ async function streamSSE(port, res) {
   }
 
   if (!received) {
-    port.postMessage({ type: 'error', error: '未收到有效内容，请检查模型或接口是否支持流式输出。' });
+    port.postMessage({ type: 'error', error: msg('errNoStream') });
     return;
   }
   port.postMessage({ type: 'done' });
@@ -231,13 +226,13 @@ async function streamNonSSE(port, res) {
   try {
     data = raw ? JSON.parse(raw) : {};
   } catch (e) {
-    port.postMessage({ type: 'error', error: '响应解析失败：' + raw.slice(0, 300) });
+    port.postMessage({ type: 'error', error: msg('errParse') + raw.slice(0, 300) });
     return;
   }
   const content =
     data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
   if (typeof content !== 'string' || !content.trim()) {
-    port.postMessage({ type: 'error', error: '未从响应中解析到内容：' + raw.slice(0, 300) });
+    port.postMessage({ type: 'error', error: msg('errNoContent') + raw.slice(0, 300) });
     return;
   }
   port.postMessage({ type: 'chunk', content });

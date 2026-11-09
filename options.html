@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>划词 AI 助手 · 设置</title>
+  <title>__MSG_optionsTitle__</title>
   <style>
     :root {
       --bg: #f6f7fb;
@@ -86,83 +86,77 @@
 <body>
   <div class="wrap">
     <header>
-      <div class="logo">划词 AI 助手</div>
-      <p class="sub">选中网页文字，一键「解释 / 翻译」 · 支持任意 OpenAI 兼容大模型，Prompt 可完全自定义</p>
+      <div class="logo">__MSG_extName__</div>
+      <p class="sub">__MSG_headerSub__</p>
     </header>
 
     <section class="card">
-      <h2>1 · 大模型接口</h2>
+      <h2>__MSG_sectionApi__</h2>
       <div class="field">
-        <label for="endpoint">接口地址 <span class="hint">（支持中转站 base URL 或 chat/completions 完整地址）</span></label>
+        <label for="endpoint">__MSG_labelEndpoint__ <span class="hint">__MSG_endpointHintInline__</span></label>
         <input id="endpoint" type="text" spellcheck="false" placeholder="https://api.deepseek.com" />
-        <p class="hint">只填中转站域名也可（如 <code>https://中转站域名.com</code>），会自动补全为 <code>/v1/chat/completions</code>。</p>
+        <p class="hint">__MSG_endpointAutoHint__</p>
       </div>
       <div class="field">
-        <label for="apiKey">API Key</label>
+        <label for="apiKey">__MSG_labelApiKey__</label>
         <div class="keywrap">
           <input id="apiKey" type="password" spellcheck="false" placeholder="sk-..." autocomplete="off" />
-          <button type="button" id="toggleKey" class="ghost">显示</button>
+          <button type="button" id="toggleKey" class="ghost">__MSG_msgShow__</button>
         </div>
       </div>
       <div class="field">
-        <label for="model">模型名称</label>
+        <label for="model">__MSG_labelModel__</label>
         <input id="model" type="text" spellcheck="false" placeholder="deepseek-chat" />
       </div>
       <div class="field">
-        <button type="button" id="testBtn" class="ghost">测试连接</button>
+        <button type="button" id="testBtn" class="ghost">__MSG_testBtn__</button>
         <span id="testStatus" class="test-status"></span>
       </div>
       <details class="providers">
-        <summary>常见服务商地址示例（点击展开）</summary>
-        <pre>中转站:    https://你的中转站域名                                        （只填 base URL，自动补 /v1/chat/completions）
-DeepSeek:  https://api.deepseek.com/chat/completions                            模型 deepseek-chat
-OpenAI:    https://api.openai.com/v1/chat/completions                             模型 gpt-4o-mini
-Kimi:      https://api.moonshot.cn/v1/chat/completions                            模型 moonshot-v1-8k
-通义千问:  https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions     模型 qwen-plus
-智谱 GLM:  https://open.bigmodel.cn/api/paas/v4/chat/completions                  模型 glm-4-flash
-硅基流动:  https://api.siliconflow.cn/v1/chat/completions                         模型 deepseek-ai/DeepSeek-V3</pre>
+        <summary>__MSG_providersSummary__</summary>
+        <pre>__MSG_providersList__</pre>
       </details>
     </section>
 
     <section class="card">
-      <h2>2 · 按钮一：问号（解释）</h2>
+      <h2>__MSG_sectionQuestion__</h2>
       <div class="field">
-        <label for="questionLabel">按钮文字</label>
+        <label for="questionLabel">__MSG_labelButtonText__</label>
         <input id="questionLabel" type="text" maxlength="6" placeholder="?" />
       </div>
       <div class="field">
-        <label for="questionPrompt">Prompt</label>
+        <label for="questionPrompt">__MSG_labelPrompt__</label>
         <textarea id="questionPrompt" rows="5" spellcheck="false"></textarea>
-        <p class="hint">占位符：<code>{{selection}}</code> 选中的文字 · <code>{{context}}</code> 选中处的上下文段落</p>
+        <p class="hint">__MSG_promptHintHtml__</p>
       </div>
       <div class="field">
-        <label for="contextQuestionPrompt">结合上下文的 Prompt（点「在上下文中查看」时使用）</label>
+        <label for="contextQuestionPrompt">__MSG_labelContextQuestionPrompt__</label>
         <textarea id="contextQuestionPrompt" rows="5" spellcheck="false"></textarea>
-        <p class="hint">选中内容较短（如单个词）时，用它结合上下文重新解释，结果更准确。占位符同上。</p>
+        <p class="hint">__MSG_contextQuestionHint__</p>
       </div>
     </section>
 
     <section class="card">
-      <h2>3 · 按钮二：翻译</h2>
+      <h2>__MSG_sectionTranslate__</h2>
       <div class="field">
-        <label for="translateLabel">按钮文字</label>
+        <label for="translateLabel">__MSG_labelButtonText__</label>
         <input id="translateLabel" type="text" maxlength="6" placeholder="译" />
       </div>
       <div class="field">
-        <label for="translatePrompt">Prompt</label>
+        <label for="translatePrompt">__MSG_labelPrompt__</label>
         <textarea id="translatePrompt" rows="5" spellcheck="false"></textarea>
-        <p class="hint">占位符：<code>{{selection}}</code> 选中的文字 · <code>{{context}}</code> 选中处的上下文段落</p>
+        <p class="hint">__MSG_promptHintHtml__</p>
       </div>
       <div class="field">
-        <label for="contextTranslatePrompt">结合上下文的 Prompt（点「在上下文中查看」时使用）</label>
+        <label for="contextTranslatePrompt">__MSG_labelContextTranslatePrompt__</label>
         <textarea id="contextTranslatePrompt" rows="5" spellcheck="false"></textarea>
-        <p class="hint">选中内容较短时，用它结合上下文重新翻译，结果更准确。占位符同上。</p>
+        <p class="hint">__MSG_contextTranslateHint__</p>
       </div>
     </section>
 
     <div class="footer">
-      <button type="button" id="saveBtn" class="primary">保存设置</button>
-      <button type="button" id="resetBtn" class="ghost">恢复默认</button>
+      <button type="button" id="saveBtn" class="primary">__MSG_saveBtn__</button>
+      <button type="button" id="resetBtn" class="ghost">__MSG_resetBtn__</button>
       <span id="saveStatus" class="test-status"></span>
     </div>
   </div>

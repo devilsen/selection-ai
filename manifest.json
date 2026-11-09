@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "划词 AI 助手",
-  "version": "1.0.0",
-  "description": "选中网页文字，一键调用大模型解释或翻译；支持自定义 Prompt、任意 OpenAI 兼容接口。",
+  "name": "__MSG_extName__",
+  "version": "1.1.0",
+  "description": "__MSG_extDesc__",
+  "default_locale": "zh_CN",
   "permissions": ["storage"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "划词 AI 助手 — 点击打开设置"
+    "default_title": "__MSG_actionTitle__"
   },
   "options_page": "options.html",
   "content_scripts": [
