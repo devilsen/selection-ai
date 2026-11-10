@@ -15,9 +15,9 @@
 
 ## 1. 打包产物（已就绪）
 
-- 上传用的 zip：`dist/selection-ai-1.1.0.zip`（manifest.json 在根目录，含全部运行文件、图标与中英文语言包）
+- 上传用的 zip：`dist/selection-ai-1.1.1.zip`（manifest.json 在根目录，含全部运行文件、图标与中英文语言包）
 
-> 重新打包命令：`zip -r dist/selection-ai-1.1.0.zip manifest.json background.js content.js options.html options.js icons _locales`
+> 重新打包命令：`zip -r dist/selection-ai-1.1.1.zip manifest.json background.js content.js options.html options.js icons _locales`
 
 ---
 
@@ -137,7 +137,7 @@ Privacy
 
 1. 打开开发者后台：`https://chrome.google.com/webstore/devconsole`
 2. 点「**新增项目（New item）**」。
-3. 上传 `dist/selection-ai-1.1.0.zip`。
+3. 上传 `dist/selection-ai-1.1.1.zip`。
 4. 填写「**商品详情**」：名称、摘要、说明（用上面第 2 节文案）。
 5. 搬运**英语语言区域**的商品详情时，用第 2 节英文栏的逐段对应翻译（不要机翻重写、不要增删功能点）。
 6. 上传「**图片素材**」：图标、截图、推广图（用第 4 节文件）。

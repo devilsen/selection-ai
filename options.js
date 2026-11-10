@@ -24,6 +24,19 @@ const DEFAULTS = {
 
 const $ = (id) => document.getElementById(id);
 
+// 用 chrome.i18n 替换页面文案（HTML 里保留中文兜底，JS 方式保证任何语言环境都生效）
+function applyI18n() {
+  document.title = msg('optionsTitle') || document.title;
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const v = msg(el.getAttribute('data-i18n'));
+    if (v) el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+    const v = msg(el.getAttribute('data-i18n-html'));
+    if (v) el.innerHTML = v;
+  });
+}
+
 // 兼容「中转站」等 OpenAI 兼容接口：只填 base URL 时自动补全路径
 function normalizeEndpoint(url) {
   let u = String(url || '').trim().replace(/\/+$/, '');
@@ -134,4 +147,5 @@ $('toggleKey').addEventListener('click', () => {
   $('toggleKey').textContent = show ? msg('msgHide') : msg('msgShow');
 });
 
+applyI18n();
 load();
